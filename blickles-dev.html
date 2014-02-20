@@ -1,0 +1,1553 @@
+<style type="text/css">
+div.playfield {
+	width: 240px;
+	height: 480px;
+	background-color: #000000;
+	margin-top: 0px;
+	margin-left: auto;
+	margin-right: auto;
+	border-style: solid;
+	border-width: 0px;
+	border-color: #444444;
+	padding: 0px;
+}
+
+#toprow {
+	display:none;
+}
+
+/*	DBGGR */	div.pfmonitor {
+/*	DBGGR */		width: 240px;
+/*	DBGGR */		height: 480px;
+/*	DBGGR */		background-color: #000000;
+/*	DBGGR */		margin-top: 0px;
+/*	DBGGR */		left: 0px;
+/*	DBGGR */		top: 94px;
+/*	DBGGR */		margin-right: auto;
+/*	DBGGR */		margin-left: auto;
+/*	DBGGR */		border-style: solid;
+/*	DBGGR */		border-width: 0px;
+/*	DBGGR */		border-color: #444444;
+/*	DBGGR */		padding: 0px;
+/*	DBGGR */		position:absolute;
+/*	DBGGR */	}
+
+/*	DBGGR */	input.piecesCountDev {
+/*	DBGGR */		position:absolute;
+/*	DBGGR */		left:2px;
+/*	DBGGR */		top:66px;
+/*	DBGGR */		width:238px;
+/*	DBGGR */	}
+
+/*	DBGGR */	textarea.DBGGR {
+/*	DBGGR */		position:absolute;
+/*	DBGGR */		right:60px;
+/*	DBGGR */		top:94px;
+/*	DBGGR */		width:240px;
+/*	DBGGR */		height:480px;
+/*	DBGGR */	}
+
+div.pfring {
+	width: 242px;
+	height: 481px;
+	background-color: #000000;
+	margin-top: 5px;
+	margin-left: auto;
+	margin-right: auto;
+	border-style: solid;
+	border-width: 0px;
+	border-color: #444444;
+	padding: 0px;
+}
+
+div.explain {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	font-face: Verdana, Arial, sans-serif;
+	font-size: 10pt; 
+}
+
+body {
+	background-color: #AAAAAA;
+	text-align: center;
+}
+
+span { 
+	position: relative;
+	margin-left: 0px;
+	border-width: 0px; 
+	padding: 0px;
+	background-image:none;
+	height: 20px;
+	width: 20px;
+	background-repeat: no-repeat; 
+	float: left;
+}
+
+input.piecesCount {
+	margin-top:25px;
+	width:238px;
+	top:66px;
+}
+
+</style>
+<script language="javascript" type="text/javascript">
+
+// Key codes
+var DIR_KEY_DOWN = 40;
+var DIR_KEY_UP = 38;
+var DIR_KEY_LEFT = 37;
+var DIR_KEY_RIGHT = 39;
+
+var SPACE_KEY = 32;
+// Used for immediate reaction to keypress
+function setKeyReaction(keyEventHandler) {
+	document.onkeydown = function(e) {
+		if (window.event) // IE
+		{
+			keyEventHandler(window.event.keyCode);
+		}
+		else if (e.which) // Netscape/Firefox/Opera
+		{
+			keyEventHandler(e.which);
+		}
+	};
+}
+
+// Used for delayed reaction to keypresses, just store keycode
+var currentKeyPress = null;
+function setKeyMemory() {
+	document.onkeydown = function(e) {
+		if (window.event) // IE
+		{
+			currentKeyPress = window.event.keyCode;
+		}
+		else if (e.which) // Netscape/Firefox/Opera
+		{
+			currentKeyPress = e.which;
+		}
+	};
+	document.onkeyup = function(e) {
+		currentKeyPress = null;
+	};
+}
+
+		setKeyReaction(function(keyCode) {
+			switch (keyCode) {
+			case DIR_KEY_DOWN:
+				down();
+				break;
+			case DIR_KEY_UP:
+				clockwise();
+				break;
+			case DIR_KEY_LEFT:
+				left();
+				break;
+			case DIR_KEY_RIGHT:
+				right();
+				break;
+			case SPACE_KEY:
+				drop();
+				break;
+			}
+		});
+		
+// ***********************
+//  Preloading Tetris
+//  square pictures. 
+// ***********************
+s0= new Image(20,20); 
+s0.src="/p/0.png";
+s1= new Image(20,20); 
+s1.src="/p/1.png";
+s2= new Image(20,20); 
+s2.src="/p/2.png";
+s3= new Image(20,20); 
+s3.src="/p/3.png";
+s4= new Image(20,20); 
+s4.src="/p/4.png";
+s5= new Image(20,20); 
+s5.src="/p/5.png";
+s6= new Image(20,20); 
+s6.src="/p/6.png";
+s7= new Image(20,20); 
+s7.src="/p/7.png";
+s8= new Image(20,20); 
+s8.src="/p/8.png";
+
+// ***********************
+// 		 Variables. 
+// ***********************
+
+// Real playing field. Note that this representation is actually upside-down. 
+
+var Field = [
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,0]
+];
+
+/*	DBGGR */	// Test playing field.
+/*	DBGGR */
+/*	DBGGR */	// var Field = [
+/*	DBGGR */	// 	[1,1,1,1,1,1,1,1,1,1,1,0],
+/*	DBGGR */	// 	[1,1,1,1,1,1,1,1,1,1,1,0],
+/*	DBGGR */	// 	[1,1,1,1,1,1,1,1,1,1,1,0],
+/*	DBGGR */	// 	[1,1,1,1,1,1,1,1,1,1,1,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// 	[0,0,0,0,0,0,0,0,0,0,0,0],
+/*	DBGGR */	// ];
+
+var BOARD_WIDTH = Field[0].length
+var BOARD_HEIGHT = Field.length
+var SQUARE_COUNT = 5
+
+// Rotational reference matrices for X and Y coordinates. 
+// 	First dimension: Tetromino
+//	Second dimension: Unique rotational position
+//	Third dimension: Square. There will only be 
+//		four elements in the square reference
+//		array, because the pieces were built such
+//		that the first square does not move under
+//		rotation, and therefore isn't present; the
+//		final square is usually a copy of the 4th
+//		square, and shares all of its coordinates
+//		and rotational instructions. 
+
+RotateX =[0,
+	[						//	3
+		[ 1, 0, 0, 0, 0],
+		[ 0,-1, 1, 1, 1],
+		[-1, 0, 0, 0, 0],
+		[ 0, 1,-1,-1,-1]
+	],
+	[						//	I
+		[ 0,-1, 1, 2, 2],		//		Rotational position 1/2
+		[ 0, 1,-1,-2,-2]		//		Rotational position 2/2
+	],
+	[						//	L
+		[ 0, 1,-1, 0, 0],
+		[ 0, 1,-1,-2,-2],
+		[ 0,-1, 1, 0, 0],
+		[ 0,-1, 1, 2, 2]
+	],
+	[						//	J
+		[ 0,-1, 1, 2, 2],
+		[ 0,-1, 1, 0, 0],
+		[ 0, 1,-1,-2,-2],
+		[ 0, 1,-1, 0, 0]
+	],
+	[						//	S
+		[ 0,-1, 1, 2, 2],
+		[ 0, 1,-1,-2,-2]
+	],
+	[						//	Z
+		[ 0, 1,-1,-2,-2],
+		[ 0,-1, 1, 2, 2]
+	],
+	[						//	T
+		[ 0, 1,-1,-1,-1],
+		[ 0, 1,-1, 1, 1],
+		[ 0,-1, 1, 1, 1],
+		[ 0,-1, 1,-1,-1]
+	],
+	[						// O has no rotations. 
+		[ 0, 0, 0, 0, 0],
+		[ 0, 0, 0, 0, 0]
+	],
+	[						//	5
+		[ 0, 1,-1, 0,-2],
+		[ 0, 1,-1, 2, 0],
+		[ 0,-1, 1, 0, 2],
+		[ 0,-1, 1,-2, 0]
+	]
+];
+
+RotateY = [0,
+	[						//	3
+		[ 0,-1, 1, 1, 1],
+		[-1, 0, 0, 0, 0],
+		[ 0, 1,-1,-1,-1],
+		[ 1, 0, 0, 0, 0]
+	],
+	[						//	I
+		[ 0, 1,-1,-2,-2],		//		Rotational position 1/2
+		[ 0,-1, 1, 2, 2]		//		Rotational position 2/2
+	],
+	[						//	L
+		[ 0, 1,-1,-2,-2],		//		Rotational position 1/4
+		[ 0,-1, 1,-0,-0],		//		etc.
+		[ 0,-1, 1, 2, 2],
+		[ 0, 1,-1,-0,-0]
+	],
+	[						//	J
+		[ 0,-1, 1,-0,-0],
+		[ 0, 1,-1,-2,-2],
+		[ 0, 1,-1,-0,-0],
+		[ 0,-1, 1, 2, 2]
+	],
+	[						//	S
+		[ 0, 1, 1,-0,-0],
+		[ 0,-1,-1,-0,-0]
+	],
+	[						//	Z
+		[ 0, 1, 1,-0,-0],
+		[ 0,-1,-1,-0,-0]
+	],
+	[						//	T
+		[ 0, 1,-1, 1, 1],
+		[ 0,-1, 1, 1, 1],
+		[ 0,-1, 1,-1,-1],
+		[ 0, 1,-1,-1,-1]
+	],
+	[					// O has no rotations. 
+		[ 0,-0,-0,-0,-0],
+		[ 0,-0,-0,-0,-0]
+	],
+	[						//	5
+		[ 0, 1,-1, 2, 0],
+		[ 0,-1, 1, 0, 2],
+		[ 0,-1, 1,-2, 0],
+		[ 0, 1,-1, 0,-2]
+	]
+];
+
+
+// Matrices used for drawing
+// the initial pieces. 
+// PieceShapeMatrix hierarchy: 
+//   First dimension: Tetromino
+//   Second dimension: Square
+
+var NewX = [0,
+	[ 6, 7, 6, 6, 6], // 3
+	[ 6, 7, 5, 4, 4], // I 
+	[ 5, 4, 6, 6, 6], // L
+	[ 5, 6, 4, 4, 4], // J
+	[ 5, 6, 5, 4, 4], // S
+	[ 5, 4, 5, 6, 6], // Z
+	[ 5, 4, 6, 5, 5], // T
+	[ 5, 6, 5, 6, 6], // O
+	[ 6, 5, 7, 5, 7]  // 5
+];
+
+var NewY = [0,
+	[23,23,22,22,22], // 3
+	[23,23,23,23,23], // I
+	[22,22,22,23,23], // L
+	[22,22,22,23,23], // J
+	[23,23,22,22,22], // S
+	[23,23,22,22,22], // Z
+	[23,23,23,22,22], // T
+	[23,23,22,22,22], // O
+	[23,23,23,22,22]  // 5
+];
+
+// Tetromino index establisher. 
+
+var t=0;
+var r=0;
+var gameOn=false;
+
+// ***********************
+// 		 Objects. 
+// ***********************
+
+
+function Square() {
+	x		:	6;
+	y		:	23;
+	oldx	:	6;
+	oldy	:	23;
+	r		:	0;
+}
+
+Squares = [
+	new Square(0),
+	new Square(1),
+	new Square(2),
+	new Square(3),
+	new Square(4)
+];
+
+// ***********************
+// 		 Functions. 
+// ***********************
+
+function draw() {
+//	for (s=0; s<SQUARE_COUNT; s++) {
+//		
+//		document.getElementById(
+//	}
+
+	DBGGR("draw(): Entering.",DBGGR_THRESHOLD,true);
+	for (s=0; s<SQUARE_COUNT; s++) {
+		DBGGR("draw(): 1st for beginning, s="+s,DBGGR_THRESHOLD);
+		yidstr = (Squares[s].oldy<10) ? "0"+Squares[s].oldy : Squares[s].oldy;
+		xidstr = (Squares[s].oldx<10) ? "0"+Squares[s].oldx : Squares[s].oldx;
+		DBGGR("draw(): 1st for ending, s="+s,DBGGR_THRESHOLD);
+		document.getElementById(yidstr+''+xidstr).style.backgroundImage = 'none';		
+	}
+	for (s=0; s<SQUARE_COUNT; s++) {
+		DBGGR("draw(): 2nd for beginning, s="+s);
+		yidstr = (Squares[s].y<10) ? "0"+Squares[s].y : Squares[s].y;
+		xidstr = (Squares[s].x<10) ? "0"+Squares[s].x : Squares[s].x;
+		DBGGR("draw(): 2nd for ending, s="+s,DBGGR_THRESHOLD);
+		document.getElementById(yidstr+''+xidstr).style.backgroundImage = 'url("/p/'+t+'.png")';
+	}
+	DBGGR("draw(): Exiting.",DBGGR_THRESHOLD);
+}
+
+function clockwise() {
+	if (isLegalRotation(0)) {
+		for (s=0; s<SQUARE_COUNT; s++) {
+			Squares[s].oldx = Squares[s].x;
+			Squares[s].oldy = Squares[s].y;
+			Squares[s].x += RotateX[t][r][s];
+			Squares[s].y += RotateY[t][r][s];
+		}
+		hasNotMoved=false;
+		r = (r+1) % (RotateX[t].length);
+		draw();
+	}
+}
+
+function counterclockwise() {
+	if (isLegalRotation(1)) {
+		for (i=0; i<SQUARE_COUNT; i++) {
+			Squares[s].oldx = Squares[s].x;
+			Squares[s].oldy = Squares[s].y;
+			Squares[s].x += 0-(RotateX[t][(r-1+RotateY[t].length) % (RotateX[t].length)][i-1]);
+			Squares[s].y += 0-(RotateY[t][(r-1+RotateY[t].length) % (RotateY[t].length)][i-1]);
+		}
+		hasNotMoved=false;
+		r = (r-1+RotateY[t].length) % (RotateX[t].length);
+		draw();
+	}
+}
+
+function isLegalRotation(rot) {
+	// 
+	//	Rotation reference:
+	//		0 - clockwise
+	//		1 - counter-clockwise
+	//
+
+	switch (rot) {
+		case 0:
+			for (s=0; s<SQUARE_COUNT; s++) {
+				if (Field[Squares[s].y+RotateY[t][r][s]]==undefined || Field[Squares[s].y+RotateY[t][r][s]][Squares[s].x+RotateX[t][r][s]]==undefined || Field[Squares[s].y+RotateY[t][r][s]][Squares[s].x+RotateX[t][r][s]]>0) {
+					return false;
+				}
+			}
+			break;
+		case 1:
+			for (s=0; s<SQUARE_COUNT; s++) {
+				if (
+					Field[
+						Squares[s].y-RotateY[t][(r-1+RotateY[t].length) % (RotateY[t].length)][s]
+					]
+					==undefined
+					
+					||
+					
+					Field[
+						Squares[s].y-RotateY[t][(r-1+RotateY[t].length) % (RotateY[t].length)][s]
+					][
+						Squares[s].x-RotateX[t][(r-1+RotateY[t].length) % (RotateX[t].length)][s]
+					]
+					==undefined
+					
+					||
+					
+					Field[
+						Squares[s].y-RotateY[t][(r-1+RotateY[t].length) % (RotateY[t].length)][s]
+					][
+						Squares[s].x-RotateX[t][(r-1+RotateY[t].length) % (RotateX[t].length)][s]
+					]
+					>0	
+					
+					) {
+					return false;
+				}
+			} 
+			break;
+	}
+	return true;
+}
+
+
+function isLegalMove(dir) {
+	//
+	//	Move reference: 
+	//		0 - down
+	//		1 - right
+	//		2 - left
+	//
+	switch (dir) {
+		case 0:
+			for (s=0; s<SQUARE_COUNT; s++) {
+				if (Field[Squares[s].y-1]==undefined || Field[Squares[s].y-1][Squares[s].x]>0) {
+					return false;
+				}
+			}
+			break;
+		case 1:
+			for (s=0; s<SQUARE_COUNT; s++) {
+				if (Field[Squares[s].y][Squares[s].x+1]==undefined || Field[Squares[s].y][Squares[s].x+1]>0) {
+					return false;
+				}
+			}
+			break;
+		case 2:
+			for (s=0; s<SQUARE_COUNT; s++) {
+				if (Field[Squares[s].y][Squares[s].x-1]==undefined || Field[Squares[s].y][Squares[s].x-1]>0) {
+					return false;
+				}
+			}
+			break;
+	}
+	return true;
+}
+
+function right() {
+	if (isLegalMove(1)) {
+		for (s=0; s<SQUARE_COUNT; s++) {
+			Squares[s].oldx = Squares[s].x;
+			Squares[s].x+=1;
+			Squares[s].oldy = Squares[s].y;
+		}
+		hasNotMoved=false;
+		draw();
+	}
+}
+
+function left() {
+	if (isLegalMove(2)) {
+		for (s=0; s<SQUARE_COUNT; s++) {
+			Squares[s].oldx = Squares[s].x;
+			Squares[s].x-=1;
+			Squares[s].oldy = Squares[s].y;
+		}
+		hasNotMoved=false;
+		draw();
+	}
+}
+
+function down() {
+	if (isLegalMove(0)) {
+		for (s=0; s<SQUARE_COUNT; s++) {
+			Squares[s].oldy = Squares[s].y;
+			Squares[s].y-=1;
+			Squares[s].oldx = Squares[s].x;
+		}
+		hasNotMoved=false;
+	}
+	else {
+		for (s=0; s<SQUARE_COUNT; s++) {
+			DBGGR("Down write: Field["+Squares[s].y+"]["+Squares[s].x+"] = "+t+", about to write to Field ...",DBGGR_THRESHOLD,true);
+			Field[Squares[s].y][Squares[s].x] = t;
+			DBGGR("Down write: Field["+Squares[s].y+"]["+Squares[s].x+"] = "+t+", just wrote to Field ...",DBGGR_THRESHOLD,true);
+		}
+		clearFullLines();
+		setupNew();
+	}
+	draw();
+}
+
+function drop() {
+	dropby = Math.min(Squares[0].y,Squares[1].y,Squares[2].y,Squares[3].y,Squares[4].y);	//	Largest Possible Drop
+	
+	for (s=0; s<SQUARE_COUNT; s++) {										//	For all squares,
+		for (j=Squares[s].y; j>=0; j--) {									// 	between their current height and the ground,
+			if (Field[j][Squares[s].x]>0) {									//	if there's a square there,
+				dropby = Math.min(dropby, Squares[s].y-j-1);				//	then if that's smaller than the currently-planned drop, change plans.
+				break;														//	and, since all lower squares won't be applicable, break. 
+			}
+		}
+	}
+	for (s=0; s<SQUARE_COUNT; s++) {
+		Squares[s].oldx = Squares[s].x;
+		Squares[s].oldy = Squares[s].y;
+		Squares[s].y -= dropby;
+		DBGGR("Drop write: Field["+Squares[s].y+"]["+Squares[s].x+"] = "+t+", about to write to Field ...",DBGGR_THRESHOLD,true);
+		Field[Squares[s].y][Squares[s].x] = t;
+		DBGGR("Drop write: Field["+Squares[s].y+"]["+Squares[s].x+"] = "+t+", just wrote to Field ...",DBGGR_THRESHOLD,true);
+	}
+	if (dropby>0) {
+		hasNotMoved=false;
+	}
+	draw();
+	clearFullLines();
+	setupNew();
+	draw();
+}
+/* 
+function shadow() {
+	shadowOffset = Math.min(Squares[0].y,Squares[1].y,Squares[2].y,Squares[3].y,Squares[4].y);	//	Largest Possible Drop
+	
+	for (s=0; s<SQUARE_COUNT; s++) {										//	For all squares,
+		for (j=Squares[s].y; j>=0; j--) {									// 	between their current height and the ground,
+			if (Field[j][Squares[s].x]>0) {									//	if there's a square there,
+				shadowOffset = Math.min(dropby, Squares[s].y-j-1);			//	then if that's smaller than the currently-planned drop, change plans.
+				break;														//	and, since all lower squares won't be applicable, break. 
+			}
+		}
+	}
+}
+*/
+
+function clearFullLines() {
+	DBGGR("Entering clearFullLines()",DBGGR_THRESHOLD,true);
+	clearInterval(downint);
+	downint = setInterval("down()", 500);
+	linesWereCleared = false;
+	for (i=Math.max(Squares[0].y,Squares[1].y,Squares[2].y,Squares[3].y,Squares[4].y); i>=Math.min(Squares[0].y,Squares[1].y,Squares[2].y,Squares[3].y,Squares[4].y); i--) {
+		lineFull = true;
+		for (j=0; j<BOARD_WIDTH; j++) {
+			if (Field[i][j]==0) {
+				lineFull = false;
+				break;
+			}
+		}
+		if (lineFull) {
+			linesWereCleared = true;
+			for (j=i; j<BOARD_HEIGHT-1; j++) {
+				for (k=0; k<BOARD_WIDTH; k++) {
+					DBGGR("inside clearFullLines() for loops, i="+i+", j="+j,DBGGR_THRESHOLD);
+	 				Field[j][k] = Field[j+1][k];
+	 			}
+			}
+			for (j=0; j<BOARD_WIDTH; j++) {
+				Field[BOARD_HEIGHT-1][j]=0;
+			}
+		}
+	}
+	if (linesWereCleared) {
+		refreshField(Math.min(Squares[0].y,Squares[1].y,Squares[2].y,Squares[3].y,Squares[4].y));
+	}
+}
+
+function refreshField(startrow) {
+	for (e=startrow; e<BOARD_HEIGHT; e++) {
+		if (e<10) {
+			yidstr = "0"+e;
+		}
+		else {
+			yidstr = e;
+		}
+
+		for (f=0; f<BOARD_WIDTH; f++) {
+			if (f<10) {
+				xidstr = "0"+f;
+			}
+			else {
+				xidstr = f;
+			}
+			if (Field[e][f]>0) {
+				document.getElementById(yidstr+''+xidstr).style.backgroundImage = 'url("/p/'+(Field[e][f])+'.png")';
+			} else {
+				document.getElementById(yidstr+''+xidstr).style.backgroundImage = 'none';
+			}
+		}
+	}
+}
+
+function setupNew() {
+	if (hasNotMoved) {
+		gameOver();
+	}
+	t = getNew();
+	r = 0;
+	hasNotMoved=true;
+	document.getElementById('piecesCount').value=parseFloat(document.getElementById('piecesCount').value)+1;
+	for (s=0; s<SQUARE_COUNT; s++) {
+		Squares[s].x = NewX[t][s];
+		Squares[s].y = NewY[t][s];
+		Squares[s].oldx = Squares[s].x;
+		Squares[s].oldy = Squares[s].y;
+	}
+	
+}
+
+function starter() {
+	hasNotMoved=false;
+	document.getElementById('piecesCount').value=0;
+	if (!gameOn) {
+		gameOn = true;
+		setupNew();
+		draw();
+		downint = setInterval("down()", 500);
+	}
+}
+
+function gameOver() {
+	gameOn=false;
+	clearInterval(downint);
+	document.getElementById('starter').value="Restart";
+	alert("Game over.");
+	clearField();
+}
+
+function clearField() {
+	clearInterval(downint);
+	for (i=0; i<BOARD_HEIGHT; i++) {
+		for (j=0; j<BOARD_WIDTH; j++) {
+			Field[i][j] = 0;
+			document.getElementById(i+''+j).style.backgroundImage = 'none';
+		}
+	}		
+}
+
+function getNew() {
+	next = piecesAry.pop();
+	if (piecesAry.length == 0) {
+		getPieces();
+	}
+	return (next*1)+1;
+}
+
+getPieces();
+
+function getPieces() {
+	var ajaxRequest;
+	try{
+		ajaxRequest = new XMLHttpRequest();
+	} catch (e){
+		try{
+			ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (e) {
+			try{
+				ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (e){
+				alert("Your browser broke!");
+				return false;
+			}
+		}
+	}
+	
+	ajaxRequest.onreadystatechange = function(){
+		if(ajaxRequest.readyState == 4){
+			pieces = ajaxRequest.responseText;
+			pieces = pieces.substring(0,pieces.length-1);
+			piecesAry = pieces.split('|');
+		}
+	}
+	ajaxRequest.open("GET", "/pieces", true);
+	ajaxRequest.send(null); 
+}
+
+/*	DBGGR */	function writeField() {
+/*	DBGGR */		document.write("[<br>");
+/*	DBGGR */		for (i=BOARD_HEIGHT-1; i>=0; i--) {
+/*	DBGGR */			document.write("[");
+/*	DBGGR */			for (j=0; j<BOARD_WIDTH; j++) {
+/*	DBGGR */				document.write(Field[i][j]);
+/*	DBGGR */				document.write(", ");
+/*	DBGGR */			}
+/*	DBGGR */			document.write("],<br>");
+/*	DBGGR */		}
+/*	DBGGR */		document.write("]<br>");
+/*	DBGGR */	}
+
+/*	DBGGR */	var DBG = true;
+/*	DBGGR */	var DBGGR_THRESHOLD = 00;
+
+/*	DBGGR */	function DBGGR(str,threshold,ref) {
+/*	DBGGR */		if (DBG) {
+/*	DBGGR */			if (!ref) {
+/*	DBGGR */				ref = false
+/*	DBGGR */			}
+/*	DBGGR */			if (ref) {
+/*	DBGGR */				refreshMonitor(0);
+/*	DBGGR */			}
+/*	DBGGR */			if (parseFloat(document.getElementById('piecesCount').value)>threshold) {
+/*	DBGGR */				document.getElementById("DBGGR").innerHTML = str+"\n"+document.getElementById("DBGGR").innerHTML
+/*	DBGGR */				//alert("!");
+/*	DBGGR */			}
+/*	DBGGR */		}
+/*	DBGGR */	}
+
+/*	DBGGR */	function refreshMonitor(startrow) {
+/*	DBGGR */		for (e=startrow; e<BOARD_HEIGHT; e++) {
+/*	DBGGR */			if (e<10) {
+/*	DBGGR */				yidstr = "0"+e;
+/*	DBGGR */			}
+/*	DBGGR */			else {
+/*	DBGGR */				yidstr = e;
+/*	DBGGR */			}
+/*	DBGGR */	
+/*	DBGGR */			for (f=0; f<BOARD_WIDTH; f++) {
+/*	DBGGR */				if (f<10) {
+/*	DBGGR */					xidstr = "0"+f;
+/*	DBGGR */				}
+/*	DBGGR */				else {
+/*	DBGGR */					xidstr = f;
+/*	DBGGR */				}
+/*	DBGGR */				if (Field[e][f]>0) {
+/*	DBGGR */					document.getElementById('m'+yidstr+''+xidstr).style.backgroundImage = 'url("/p/'+(Field[e][f])+'.png")';
+/*	DBGGR */				} else {
+/*	DBGGR */					document.getElementById('m'+yidstr+''+xidstr).style.backgroundImage = 'none';
+/*	DBGGR */				}
+/*	DBGGR */			}
+/*	DBGGR */		}
+/*	DBGGR */	}
+
+</script>
+<input type="button" id="starter" onclick="starter();" value="Start">
+<!-- DBGGR --><input type="button" onclick="writeField();" value="Write Field">
+<!-- DBGGR --><input type="button" onclick="refreshField(0);" value="Refresh Field">
+<div class="explain"> Left, right, up for CW turn, space for fast drop. <br><a href="todo.html">The To-Do List</a></div>
+<!-- DBGGR --><!-- 
+<input type="text" id="piecesCount" class="piecesCount">
+--><!-- DBGGR -->
+<!-- DBGGR --> <input type="text" id="piecesCount" class="piecesCountDev">
+<!-- DBGGR --> <br><br>
+<!-- DBGGR --><textarea id="DBGGR" class="DBGGR"></textarea>
+<div class="pfring">
+<div id="playfield" class="playfield">
+	<div id="toprow" class="row">
+		<span id="2400"></span>
+		<span id="2401"></span>
+		<span id="2402"></span>
+		<span id="2403"></span>
+		<span id="2404"></span>
+		<span id="2405"></span>
+		<span id="2406"></span>
+		<span id="2407"></span>
+		<span id="2408"></span>
+		<span id="2409"></span>
+		<span id="2410"></span>
+		<span id="2411"></span>
+	</div>
+	<div class="row">
+		<span id="2300"></span>
+		<span id="2301"></span>
+		<span id="2302"></span>
+		<span id="2303"></span>
+		<span id="2304"></span>
+		<span id="2305"></span>
+		<span id="2306"></span>
+		<span id="2307"></span>
+		<span id="2308"></span>
+		<span id="2309"></span>
+		<span id="2310"></span>
+		<span id="2311"></span>
+	</div>
+	<div class="row">
+		<span id="2200"></span>
+		<span id="2201"></span>
+		<span id="2202"></span>
+		<span id="2203"></span>
+		<span id="2204"></span>
+		<span id="2205"></span>
+		<span id="2206"></span>
+		<span id="2207"></span>
+		<span id="2208"></span>
+		<span id="2209"></span>
+		<span id="2210"></span>
+		<span id="2211"></span>
+	</div>
+	<div class="row">
+		<span id="2100"></span>
+		<span id="2101"></span>
+		<span id="2102"></span>
+		<span id="2103"></span>
+		<span id="2104"></span>
+		<span id="2105"></span>
+		<span id="2106"></span>
+		<span id="2107"></span>
+		<span id="2108"></span>
+		<span id="2109"></span>
+		<span id="2110"></span>
+		<span id="2111"></span>
+	</div>
+	<div class="row">
+		<span id="2000"></span>
+		<span id="2001"></span>
+		<span id="2002"></span>
+		<span id="2003"></span>
+		<span id="2004"></span>
+		<span id="2005"></span>
+		<span id="2006"></span>
+		<span id="2007"></span>
+		<span id="2008"></span>
+		<span id="2009"></span>
+		<span id="2010"></span>
+		<span id="2011"></span>
+	</div>
+	<div class="row">
+		<span id="1900"></span>
+		<span id="1901"></span>
+		<span id="1902"></span>
+		<span id="1903"></span>
+		<span id="1904"></span>
+		<span id="1905"></span>
+		<span id="1906"></span>
+		<span id="1907"></span>
+		<span id="1908"></span>
+		<span id="1909"></span>
+		<span id="1910"></span>
+		<span id="1911"></span>
+	</div>
+	<div class="row">
+		<span id="1800"></span>
+		<span id="1801"></span>
+		<span id="1802"></span>
+		<span id="1803"></span>
+		<span id="1804"></span>
+		<span id="1805"></span>
+		<span id="1806"></span>
+		<span id="1807"></span>
+		<span id="1808"></span>
+		<span id="1809"></span>
+		<span id="1810"></span>
+		<span id="1811"></span>
+	</div>
+	<div class="row">
+		<span id="1700"></span>
+		<span id="1701"></span>
+		<span id="1702"></span>
+		<span id="1703"></span>
+		<span id="1704"></span>
+		<span id="1705"></span>
+		<span id="1706"></span>
+		<span id="1707"></span>
+		<span id="1708"></span>
+		<span id="1709"></span>
+		<span id="1710"></span>
+		<span id="1711"></span>
+	</div>
+	<div class="row">
+		<span id="1600"></span>
+		<span id="1601"></span>
+		<span id="1602"></span>
+		<span id="1603"></span>
+		<span id="1604"></span>
+		<span id="1605"></span>
+		<span id="1606"></span>
+		<span id="1607"></span>
+		<span id="1608"></span>
+		<span id="1609"></span>
+		<span id="1610"></span>
+		<span id="1611"></span>
+	</div>
+	<div class="row">
+		<span id="1500"></span>
+		<span id="1501"></span>
+		<span id="1502"></span>
+		<span id="1503"></span>
+		<span id="1504"></span>
+		<span id="1505"></span>
+		<span id="1506"></span>
+		<span id="1507"></span>
+		<span id="1508"></span>
+		<span id="1509"></span>
+		<span id="1510"></span>
+		<span id="1511"></span>
+	</div>
+	<div class="row">
+		<span id="1400"></span>
+		<span id="1401"></span>
+		<span id="1402"></span>
+		<span id="1403"></span>
+		<span id="1404"></span>
+		<span id="1405"></span>
+		<span id="1406"></span>
+		<span id="1407"></span>
+		<span id="1408"></span>
+		<span id="1409"></span>
+		<span id="1410"></span>
+		<span id="1411"></span>
+	</div>
+	<div class="row">
+		<span id="1300"></span>
+		<span id="1301"></span>
+		<span id="1302"></span>
+		<span id="1303"></span>
+		<span id="1304"></span>
+		<span id="1305"></span>
+		<span id="1306"></span>
+		<span id="1307"></span>
+		<span id="1308"></span>
+		<span id="1309"></span>
+		<span id="1310"></span>
+		<span id="1311"></span>
+	</div>
+	<div class="row">
+		<span id="1200"></span>
+		<span id="1201"></span>
+		<span id="1202"></span>
+		<span id="1203"></span>
+		<span id="1204"></span>
+		<span id="1205"></span>
+		<span id="1206"></span>
+		<span id="1207"></span>
+		<span id="1208"></span>
+		<span id="1209"></span>
+		<span id="1210"></span>
+		<span id="1211"></span>
+	</div>
+	<div class="row">
+		<span id="1100"></span>
+		<span id="1101"></span>
+		<span id="1102"></span>
+		<span id="1103"></span>
+		<span id="1104"></span>
+		<span id="1105"></span>
+		<span id="1106"></span>
+		<span id="1107"></span>
+		<span id="1108"></span>
+		<span id="1109"></span>
+		<span id="1110"></span>
+		<span id="1111"></span>
+	</div>
+	<div class="row">
+		<span id="1000"></span>
+		<span id="1001"></span>
+		<span id="1002"></span>
+		<span id="1003"></span>
+		<span id="1004"></span>
+		<span id="1005"></span>
+		<span id="1006"></span>
+		<span id="1007"></span>
+		<span id="1008"></span>
+		<span id="1009"></span>
+		<span id="1010"></span>
+		<span id="1011"></span>
+	</div>
+	<div class="row">
+		<span id="0900"></span>
+		<span id="0901"></span>
+		<span id="0902"></span>
+		<span id="0903"></span>
+		<span id="0904"></span>
+		<span id="0905"></span>
+		<span id="0906"></span>
+		<span id="0907"></span>
+		<span id="0908"></span>
+		<span id="0909"></span>
+		<span id="0910"></span>
+		<span id="0911"></span>
+	</div>
+	<div class="row">
+		<span id="0800"></span>
+		<span id="0801"></span>
+		<span id="0802"></span>
+		<span id="0803"></span>
+		<span id="0804"></span>
+		<span id="0805"></span>
+		<span id="0806"></span>
+		<span id="0807"></span>
+		<span id="0808"></span>
+		<span id="0809"></span>
+		<span id="0810"></span>
+		<span id="0811"></span>
+	</div>
+	<div class="row">
+		<span id="0700"></span>
+		<span id="0701"></span>
+		<span id="0702"></span>
+		<span id="0703"></span>
+		<span id="0704"></span>
+		<span id="0705"></span>
+		<span id="0706"></span>
+		<span id="0707"></span>
+		<span id="0708"></span>
+		<span id="0709"></span>
+		<span id="0710"></span>
+		<span id="0711"></span>
+	</div>
+	<div class="row">
+		<span id="0600"></span>
+		<span id="0601"></span>
+		<span id="0602"></span>
+		<span id="0603"></span>
+		<span id="0604"></span>
+		<span id="0605"></span>
+		<span id="0606"></span>
+		<span id="0607"></span>
+		<span id="0608"></span>
+		<span id="0609"></span>
+		<span id="0610"></span>
+		<span id="0611"></span>
+	</div>
+	<div class="row">
+		<span id="0500"></span>
+		<span id="0501"></span>
+		<span id="0502"></span>
+		<span id="0503"></span>
+		<span id="0504"></span>
+		<span id="0505"></span>
+		<span id="0506"></span>
+		<span id="0507"></span>
+		<span id="0508"></span>
+		<span id="0509"></span>
+		<span id="0510"></span>
+		<span id="0511"></span>
+	</div>
+	<div class="row">
+		<span id="0400"></span>
+		<span id="0401"></span>
+		<span id="0402"></span>
+		<span id="0403"></span>
+		<span id="0404"></span>
+		<span id="0405"></span>
+		<span id="0406"></span>
+		<span id="0407"></span>
+		<span id="0408"></span>
+		<span id="0409"></span>
+		<span id="0410"></span>
+		<span id="0411"></span>
+	</div>
+	<div class="row">
+		<span id="0300"></span>
+		<span id="0301"></span>
+		<span id="0302"></span>
+		<span id="0303"></span>
+		<span id="0304"></span>
+		<span id="0305"></span>
+		<span id="0306"></span>
+		<span id="0307"></span>
+		<span id="0308"></span>
+		<span id="0309"></span>
+		<span id="0310"></span>
+		<span id="0311"></span>
+	</div>
+	<div class="row">
+		<span id="0200"></span>
+		<span id="0201"></span>
+		<span id="0202"></span>
+		<span id="0203"></span>
+		<span id="0204"></span>
+		<span id="0205"></span>
+		<span id="0206"></span>
+		<span id="0207"></span>
+		<span id="0208"></span>
+		<span id="0209"></span>
+		<span id="0210"></span>
+		<span id="0211"></span>
+	</div>
+	<div class="row">
+		<span id="0100"></span>
+		<span id="0101"></span>
+		<span id="0102"></span>
+		<span id="0103"></span>
+		<span id="0104"></span>
+		<span id="0105"></span>
+		<span id="0106"></span>
+		<span id="0107"></span>
+		<span id="0108"></span>
+		<span id="0109"></span>
+		<span id="0110"></span>
+		<span id="0111"></span>
+	</div>
+	<div class="row">
+		<span id="0000"></span>
+		<span id="0001"></span>
+		<span id="0002"></span>
+		<span id="0003"></span>
+		<span id="0004"></span>
+		<span id="0005"></span>
+		<span id="0006"></span>
+		<span id="0007"></span>
+		<span id="0008"></span>
+		<span id="0009"></span>
+		<span id="0010"></span>
+		<span id="0011"></span>
+	</div>
+</div>
+</div>
+<!-- DBGGR -->	<div class="pfmonitor">
+<!-- DBGGR -->	<div id="toprow" class="row">
+<!-- DBGGR -->		<span id="m2400"></span>
+<!-- DBGGR -->		<span id="m2401"></span>
+<!-- DBGGR -->		<span id="m2402"></span>
+<!-- DBGGR -->		<span id="m2403"></span>
+<!-- DBGGR -->		<span id="m2404"></span>
+<!-- DBGGR -->		<span id="m2405"></span>
+<!-- DBGGR -->		<span id="m2406"></span>
+<!-- DBGGR -->		<span id="m2407"></span>
+<!-- DBGGR -->		<span id="m2408"></span>
+<!-- DBGGR -->		<span id="m2409"></span>
+<!-- DBGGR -->		<span id="m2410"></span>
+<!-- DBGGR -->		<span id="m2411"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m2300"></span>
+<!-- DBGGR -->		<span id="m2301"></span>
+<!-- DBGGR -->		<span id="m2302"></span>
+<!-- DBGGR -->		<span id="m2303"></span>
+<!-- DBGGR -->		<span id="m2304"></span>
+<!-- DBGGR -->		<span id="m2305"></span>
+<!-- DBGGR -->		<span id="m2306"></span>
+<!-- DBGGR -->		<span id="m2307"></span>
+<!-- DBGGR -->		<span id="m2308"></span>
+<!-- DBGGR -->		<span id="m2309"></span>
+<!-- DBGGR -->		<span id="m2310"></span>
+<!-- DBGGR -->		<span id="m2311"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m2200"></span>
+<!-- DBGGR -->		<span id="m2201"></span>
+<!-- DBGGR -->		<span id="m2202"></span>
+<!-- DBGGR -->		<span id="m2203"></span>
+<!-- DBGGR -->		<span id="m2204"></span>
+<!-- DBGGR -->		<span id="m2205"></span>
+<!-- DBGGR -->		<span id="m2206"></span>
+<!-- DBGGR -->		<span id="m2207"></span>
+<!-- DBGGR -->		<span id="m2208"></span>
+<!-- DBGGR -->		<span id="m2209"></span>
+<!-- DBGGR -->		<span id="m2210"></span>
+<!-- DBGGR -->		<span id="m2211"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m2100"></span>
+<!-- DBGGR -->		<span id="m2101"></span>
+<!-- DBGGR -->		<span id="m2102"></span>
+<!-- DBGGR -->		<span id="m2103"></span>
+<!-- DBGGR -->		<span id="m2104"></span>
+<!-- DBGGR -->		<span id="m2105"></span>
+<!-- DBGGR -->		<span id="m2106"></span>
+<!-- DBGGR -->		<span id="m2107"></span>
+<!-- DBGGR -->		<span id="m2108"></span>
+<!-- DBGGR -->		<span id="m2109"></span>
+<!-- DBGGR -->		<span id="m2110"></span>
+<!-- DBGGR -->		<span id="m2111"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m2000"></span>
+<!-- DBGGR -->		<span id="m2001"></span>
+<!-- DBGGR -->		<span id="m2002"></span>
+<!-- DBGGR -->		<span id="m2003"></span>
+<!-- DBGGR -->		<span id="m2004"></span>
+<!-- DBGGR -->		<span id="m2005"></span>
+<!-- DBGGR -->		<span id="m2006"></span>
+<!-- DBGGR -->		<span id="m2007"></span>
+<!-- DBGGR -->		<span id="m2008"></span>
+<!-- DBGGR -->		<span id="m2009"></span>
+<!-- DBGGR -->		<span id="m2010"></span>
+<!-- DBGGR -->		<span id="m2011"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1900"></span>
+<!-- DBGGR -->		<span id="m1901"></span>
+<!-- DBGGR -->		<span id="m1902"></span>
+<!-- DBGGR -->		<span id="m1903"></span>
+<!-- DBGGR -->		<span id="m1904"></span>
+<!-- DBGGR -->		<span id="m1905"></span>
+<!-- DBGGR -->		<span id="m1906"></span>
+<!-- DBGGR -->		<span id="m1907"></span>
+<!-- DBGGR -->		<span id="m1908"></span>
+<!-- DBGGR -->		<span id="m1909"></span>
+<!-- DBGGR -->		<span id="m1910"></span>
+<!-- DBGGR -->		<span id="m1911"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1800"></span>
+<!-- DBGGR -->		<span id="m1801"></span>
+<!-- DBGGR -->		<span id="m1802"></span>
+<!-- DBGGR -->		<span id="m1803"></span>
+<!-- DBGGR -->		<span id="m1804"></span>
+<!-- DBGGR -->		<span id="m1805"></span>
+<!-- DBGGR -->		<span id="m1806"></span>
+<!-- DBGGR -->		<span id="m1807"></span>
+<!-- DBGGR -->		<span id="m1808"></span>
+<!-- DBGGR -->		<span id="m1809"></span>
+<!-- DBGGR -->		<span id="m1810"></span>
+<!-- DBGGR -->		<span id="m1811"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1700"></span>
+<!-- DBGGR -->		<span id="m1701"></span>
+<!-- DBGGR -->		<span id="m1702"></span>
+<!-- DBGGR -->		<span id="m1703"></span>
+<!-- DBGGR -->		<span id="m1704"></span>
+<!-- DBGGR -->		<span id="m1705"></span>
+<!-- DBGGR -->		<span id="m1706"></span>
+<!-- DBGGR -->		<span id="m1707"></span>
+<!-- DBGGR -->		<span id="m1708"></span>
+<!-- DBGGR -->		<span id="m1709"></span>
+<!-- DBGGR -->		<span id="m1710"></span>
+<!-- DBGGR -->		<span id="m1711"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1600"></span>
+<!-- DBGGR -->		<span id="m1601"></span>
+<!-- DBGGR -->		<span id="m1602"></span>
+<!-- DBGGR -->		<span id="m1603"></span>
+<!-- DBGGR -->		<span id="m1604"></span>
+<!-- DBGGR -->		<span id="m1605"></span>
+<!-- DBGGR -->		<span id="m1606"></span>
+<!-- DBGGR -->		<span id="m1607"></span>
+<!-- DBGGR -->		<span id="m1608"></span>
+<!-- DBGGR -->		<span id="m1609"></span>
+<!-- DBGGR -->		<span id="m1610"></span>
+<!-- DBGGR -->		<span id="m1611"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1500"></span>
+<!-- DBGGR -->		<span id="m1501"></span>
+<!-- DBGGR -->		<span id="m1502"></span>
+<!-- DBGGR -->		<span id="m1503"></span>
+<!-- DBGGR -->		<span id="m1504"></span>
+<!-- DBGGR -->		<span id="m1505"></span>
+<!-- DBGGR -->		<span id="m1506"></span>
+<!-- DBGGR -->		<span id="m1507"></span>
+<!-- DBGGR -->		<span id="m1508"></span>
+<!-- DBGGR -->		<span id="m1509"></span>
+<!-- DBGGR -->		<span id="m1510"></span>
+<!-- DBGGR -->		<span id="m1511"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1400"></span>
+<!-- DBGGR -->		<span id="m1401"></span>
+<!-- DBGGR -->		<span id="m1402"></span>
+<!-- DBGGR -->		<span id="m1403"></span>
+<!-- DBGGR -->		<span id="m1404"></span>
+<!-- DBGGR -->		<span id="m1405"></span>
+<!-- DBGGR -->		<span id="m1406"></span>
+<!-- DBGGR -->		<span id="m1407"></span>
+<!-- DBGGR -->		<span id="m1408"></span>
+<!-- DBGGR -->		<span id="m1409"></span>
+<!-- DBGGR -->		<span id="m1410"></span>
+<!-- DBGGR -->		<span id="m1411"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1300"></span>
+<!-- DBGGR -->		<span id="m1301"></span>
+<!-- DBGGR -->		<span id="m1302"></span>
+<!-- DBGGR -->		<span id="m1303"></span>
+<!-- DBGGR -->		<span id="m1304"></span>
+<!-- DBGGR -->		<span id="m1305"></span>
+<!-- DBGGR -->		<span id="m1306"></span>
+<!-- DBGGR -->		<span id="m1307"></span>
+<!-- DBGGR -->		<span id="m1308"></span>
+<!-- DBGGR -->		<span id="m1309"></span>
+<!-- DBGGR -->		<span id="m1310"></span>
+<!-- DBGGR -->		<span id="m1311"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1200"></span>
+<!-- DBGGR -->		<span id="m1201"></span>
+<!-- DBGGR -->		<span id="m1202"></span>
+<!-- DBGGR -->		<span id="m1203"></span>
+<!-- DBGGR -->		<span id="m1204"></span>
+<!-- DBGGR -->		<span id="m1205"></span>
+<!-- DBGGR -->		<span id="m1206"></span>
+<!-- DBGGR -->		<span id="m1207"></span>
+<!-- DBGGR -->		<span id="m1208"></span>
+<!-- DBGGR -->		<span id="m1209"></span>
+<!-- DBGGR -->		<span id="m1210"></span>
+<!-- DBGGR -->		<span id="m1211"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1100"></span>
+<!-- DBGGR -->		<span id="m1101"></span>
+<!-- DBGGR -->		<span id="m1102"></span>
+<!-- DBGGR -->		<span id="m1103"></span>
+<!-- DBGGR -->		<span id="m1104"></span>
+<!-- DBGGR -->		<span id="m1105"></span>
+<!-- DBGGR -->		<span id="m1106"></span>
+<!-- DBGGR -->		<span id="m1107"></span>
+<!-- DBGGR -->		<span id="m1108"></span>
+<!-- DBGGR -->		<span id="m1109"></span>
+<!-- DBGGR -->		<span id="m1110"></span>
+<!-- DBGGR -->		<span id="m1111"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m1000"></span>
+<!-- DBGGR -->		<span id="m1001"></span>
+<!-- DBGGR -->		<span id="m1002"></span>
+<!-- DBGGR -->		<span id="m1003"></span>
+<!-- DBGGR -->		<span id="m1004"></span>
+<!-- DBGGR -->		<span id="m1005"></span>
+<!-- DBGGR -->		<span id="m1006"></span>
+<!-- DBGGR -->		<span id="m1007"></span>
+<!-- DBGGR -->		<span id="m1008"></span>
+<!-- DBGGR -->		<span id="m1009"></span>
+<!-- DBGGR -->		<span id="m1010"></span>
+<!-- DBGGR -->		<span id="m1011"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0900"></span>
+<!-- DBGGR -->		<span id="m0901"></span>
+<!-- DBGGR -->		<span id="m0902"></span>
+<!-- DBGGR -->		<span id="m0903"></span>
+<!-- DBGGR -->		<span id="m0904"></span>
+<!-- DBGGR -->		<span id="m0905"></span>
+<!-- DBGGR -->		<span id="m0906"></span>
+<!-- DBGGR -->		<span id="m0907"></span>
+<!-- DBGGR -->		<span id="m0908"></span>
+<!-- DBGGR -->		<span id="m0909"></span>
+<!-- DBGGR -->		<span id="m0910"></span>
+<!-- DBGGR -->		<span id="m0911"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0800"></span>
+<!-- DBGGR -->		<span id="m0801"></span>
+<!-- DBGGR -->		<span id="m0802"></span>
+<!-- DBGGR -->		<span id="m0803"></span>
+<!-- DBGGR -->		<span id="m0804"></span>
+<!-- DBGGR -->		<span id="m0805"></span>
+<!-- DBGGR -->		<span id="m0806"></span>
+<!-- DBGGR -->		<span id="m0807"></span>
+<!-- DBGGR -->		<span id="m0808"></span>
+<!-- DBGGR -->		<span id="m0809"></span>
+<!-- DBGGR -->		<span id="m0810"></span>
+<!-- DBGGR -->		<span id="m0811"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0700"></span>
+<!-- DBGGR -->		<span id="m0701"></span>
+<!-- DBGGR -->		<span id="m0702"></span>
+<!-- DBGGR -->		<span id="m0703"></span>
+<!-- DBGGR -->		<span id="m0704"></span>
+<!-- DBGGR -->		<span id="m0705"></span>
+<!-- DBGGR -->		<span id="m0706"></span>
+<!-- DBGGR -->		<span id="m0707"></span>
+<!-- DBGGR -->		<span id="m0708"></span>
+<!-- DBGGR -->		<span id="m0709"></span>
+<!-- DBGGR -->		<span id="m0710"></span>
+<!-- DBGGR -->		<span id="m0711"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0600"></span>
+<!-- DBGGR -->		<span id="m0601"></span>
+<!-- DBGGR -->		<span id="m0602"></span>
+<!-- DBGGR -->		<span id="m0603"></span>
+<!-- DBGGR -->		<span id="m0604"></span>
+<!-- DBGGR -->		<span id="m0605"></span>
+<!-- DBGGR -->		<span id="m0606"></span>
+<!-- DBGGR -->		<span id="m0607"></span>
+<!-- DBGGR -->		<span id="m0608"></span>
+<!-- DBGGR -->		<span id="m0609"></span>
+<!-- DBGGR -->		<span id="m0610"></span>
+<!-- DBGGR -->		<span id="m0611"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0500"></span>
+<!-- DBGGR -->		<span id="m0501"></span>
+<!-- DBGGR -->		<span id="m0502"></span>
+<!-- DBGGR -->		<span id="m0503"></span>
+<!-- DBGGR -->		<span id="m0504"></span>
+<!-- DBGGR -->		<span id="m0505"></span>
+<!-- DBGGR -->		<span id="m0506"></span>
+<!-- DBGGR -->		<span id="m0507"></span>
+<!-- DBGGR -->		<span id="m0508"></span>
+<!-- DBGGR -->		<span id="m0509"></span>
+<!-- DBGGR -->		<span id="m0510"></span>
+<!-- DBGGR -->		<span id="m0511"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0400"></span>
+<!-- DBGGR -->		<span id="m0401"></span>
+<!-- DBGGR -->		<span id="m0402"></span>
+<!-- DBGGR -->		<span id="m0403"></span>
+<!-- DBGGR -->		<span id="m0404"></span>
+<!-- DBGGR -->		<span id="m0405"></span>
+<!-- DBGGR -->		<span id="m0406"></span>
+<!-- DBGGR -->		<span id="m0407"></span>
+<!-- DBGGR -->		<span id="m0408"></span>
+<!-- DBGGR -->		<span id="m0409"></span>
+<!-- DBGGR -->		<span id="m0410"></span>
+<!-- DBGGR -->		<span id="m0411"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0300"></span>
+<!-- DBGGR -->		<span id="m0301"></span>
+<!-- DBGGR -->		<span id="m0302"></span>
+<!-- DBGGR -->		<span id="m0303"></span>
+<!-- DBGGR -->		<span id="m0304"></span>
+<!-- DBGGR -->		<span id="m0305"></span>
+<!-- DBGGR -->		<span id="m0306"></span>
+<!-- DBGGR -->		<span id="m0307"></span>
+<!-- DBGGR -->		<span id="m0308"></span>
+<!-- DBGGR -->		<span id="m0309"></span>
+<!-- DBGGR -->		<span id="m0310"></span>
+<!-- DBGGR -->		<span id="m0311"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0200"></span>
+<!-- DBGGR -->		<span id="m0201"></span>
+<!-- DBGGR -->		<span id="m0202"></span>
+<!-- DBGGR -->		<span id="m0203"></span>
+<!-- DBGGR -->		<span id="m0204"></span>
+<!-- DBGGR -->		<span id="m0205"></span>
+<!-- DBGGR -->		<span id="m0206"></span>
+<!-- DBGGR -->		<span id="m0207"></span>
+<!-- DBGGR -->		<span id="m0208"></span>
+<!-- DBGGR -->		<span id="m0209"></span>
+<!-- DBGGR -->		<span id="m0210"></span>
+<!-- DBGGR -->		<span id="m0211"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0100"></span>
+<!-- DBGGR -->		<span id="m0101"></span>
+<!-- DBGGR -->		<span id="m0102"></span>
+<!-- DBGGR -->		<span id="m0103"></span>
+<!-- DBGGR -->		<span id="m0104"></span>
+<!-- DBGGR -->		<span id="m0105"></span>
+<!-- DBGGR -->		<span id="m0106"></span>
+<!-- DBGGR -->		<span id="m0107"></span>
+<!-- DBGGR -->		<span id="m0108"></span>
+<!-- DBGGR -->		<span id="m0109"></span>
+<!-- DBGGR -->		<span id="m0110"></span>
+<!-- DBGGR -->		<span id="m0111"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	<div class="row">
+<!-- DBGGR -->		<span id="m0000"></span>
+<!-- DBGGR -->		<span id="m0001"></span>
+<!-- DBGGR -->		<span id="m0002"></span>
+<!-- DBGGR -->		<span id="m0003"></span>
+<!-- DBGGR -->		<span id="m0004"></span>
+<!-- DBGGR -->		<span id="m0005"></span>
+<!-- DBGGR -->		<span id="m0006"></span>
+<!-- DBGGR -->		<span id="m0007"></span>
+<!-- DBGGR -->		<span id="m0008"></span>
+<!-- DBGGR -->		<span id="m0009"></span>
+<!-- DBGGR -->		<span id="m0010"></span>
+<!-- DBGGR -->		<span id="m0011"></span>
+<!-- DBGGR -->	</div>
+<!-- DBGGR -->	</div>
