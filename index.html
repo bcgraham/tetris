@@ -62,21 +62,6 @@ div.otherPlayersField {
 	padding: 0px;
 	z-index: 5;
 }
-/*	DBGGR */	div#coordinates {
-/*	DBGGR */		font-family:sans-serif;
-/*	DBGGR */		font-size:10pt;
-/*	DBGGR */		position:absolute;
-/*	DBGGR */		bottom:25px;
-/*	DBGGR */		width:600px;
-/*	DBGGR */	}
-/*	DBGGR */	
-/*	DBGGR */	input.coordOutput {
-/*	DBGGR */		width:25px;
-/*	DBGGR */		font-family:sans-serif;
-/*	DBGGR */		font-size:10pt;
-/*	DBGGR */		margin:1px;
-/*	DBGGR */		padding:1px;
-/*	DBGGR */	}
 
 div.toprow {
 	display:none;
@@ -110,62 +95,10 @@ div#nextPiece0 {
 	border: 0px #AAAAAA solid;
 }
 
-/*	DBGGR */	div.pfmonitor {
-/*	DBGGR */		width: 240px;
-/*	DBGGR */		height: 480px;
-/*	DBGGR */		background-color: #000000;
-/*	DBGGR */		margin-top: 0px;
-/*	DBGGR */		left: 0px;
-/*	DBGGR */		top: 94px;
-/*	DBGGR */		margin-right: auto;
-/*	DBGGR */		margin-left: auto;
-/*	DBGGR */		border-style: solid;
-/*	DBGGR */		border-width: 0px;
-/*	DBGGR */		border-color: #444444;
-/*	DBGGR */		padding: 0px;
-/*	DBGGR */		position:absolute;
-/*	DBGGR */	}
-/*	DBGGR */
-/*	DBGGR */	input.piecesCountDev {
-/*	DBGGR */		position:absolute;
-/*	DBGGR */		left:2px;
-/*	DBGGR */		top:66px;
-/*	DBGGR */		width:238px;
-/*	DBGGR */	}
-/*	DBGGR */
-/*	DBGGR */	input.piecesAryViewer {
-/*	DBGGR */		font-size:8pt;
-/*	DBGGR */		font-family:sans-serif;
-/*	DBGGR */		margin:0px;
-/*	DBGGR */		padding:0px;
-/*	DBGGR */		width:20px;
-/*	DBGGR */	}
 
-/*	DBGGR */	textarea.DBGGR {
-/*	DBGGR */		position:absolute;
-/*	DBGGR */		right:60px;
-/*	DBGGR */		top:94px;
-/*	DBGGR */		width:240px;
-/*	DBGGR */		height:480px;
-/*	DBGGR */	}
 
-/*	DBGGR */	div#typeCounterDiv {
-/*	DBGGR */		position:absolute;
-/*	DBGGR */		bottom:40px;
-/*	DBGGR */		left:40px;
-/*	DBGGR */		width:105px;
-/*	DBGGR */	}
 
-/*	DBGGR */	input.typeCounter {
-/*	DBGGR */		width:35px;
-/*	DBGGR */	}
 
-/*	DBGGR */	input#decksCounter {
-/*	DBGGR */		position:absolute;
-/*	DBGGR */		right:40px;
-/*	DBGGR */		bottom:40px;
-/*	DBGGR */		width:50px;
-/*	DBGGR */	}
 
 div.pfring {
 	width: 500px;
@@ -581,23 +514,19 @@ function drawpiece() {
 //		2. Draw the current piece.
 //		3. Draw the current piece's shadow. 
 
-	DBGGR("tetronimo in play right now: "+t,DBGGR_THRESHOLD);
 	// 1. 
 	for (s=0; s<SQUARE_COUNT; s++) {
 			ysidstr = (Squares[s].shy<10) ? "0"+Squares[s].shy : Squares[s].shy;							// Y Shadow ID String
 			xsidstr = (Squares[s].shx<10) ? "0"+Squares[s].shx : Squares[s].shx;							// X Shadow ID String
-			DBGGR("full shadow id string is: "+'s'+ysidstr+''+xsidstr,DBGGR_THRESHOLD);
 			document.getElementById('s'+ysidstr+''+xsidstr).style.borderColor = 'transparent';
 			document.getElementById('s'+ysidstr+''+xsidstr).style.backgroundColor = 'transparent';
 			yidstr = (Squares[s].oldy<10) ? "0"+Squares[s].oldy : Squares[s].oldy;
 			xidstr = (Squares[s].oldx<10) ? "0"+Squares[s].oldx : Squares[s].oldx;
-			DBGGR("full normal id string is: "+ysidstr+''+xsidstr,DBGGR_THRESHOLD);
 			document.getElementById(yidstr+''+xidstr).style.borderColor = 'transparent';
 			document.getElementById(yidstr+''+xidstr).style.backgroundColor = 'transparent';
 	} 
 	dropby = dropbyf();
 	
-	DBGGR("dropby = "+dropby,DBGGR_THRESHOLD,true);
 	// 2. 
 	col = color_lookup(t)
 	for (s=0; s<SQUARE_COUNT; s++) {
@@ -612,7 +541,6 @@ function drawpiece() {
 		Squares[s].shy = Squares[s].y - dropby; 
 		ysidstr = (Squares[s].shy<10) ? "0"+Squares[s].shy : Squares[s].shy;
 		xsidstr = (Squares[s].shx<10) ? "0"+Squares[s].shx : Squares[s].shx;
-		DBGGR(Squares[s].shx,DBGGR_THRESHOLD);
 			document.getElementById('s'+ysidstr+''+xsidstr).style.borderColor = col;
 			document.getElementById('s'+ysidstr+''+xsidstr).style.backgroundColor = col;
 	}
@@ -655,7 +583,6 @@ function clockwise() {
 			Squares[s].x += RotateX[t][r][s];
 			Squares[s].y += RotateY[t][r][s];
 		}
-		/* DBGGR */ logCoordinates();
 		drawpiece();
 		hasNotMoved=false;
 		r = (r+1) % (RotateX[t].length);
@@ -670,7 +597,6 @@ function counterclockwise() {
 			Squares[s].x += 0-(RotateX[t][(r-1+RotateY[t].length) % (RotateX[t].length)][i-1]);
 			Squares[s].y += 0-(RotateY[t][(r-1+RotateY[t].length) % (RotateY[t].length)][i-1]);
 		}
-		/* DBGGR */ logCoordinates();
 		hasNotMoved=false;
 		r = (r-1+RotateY[t].length) % (RotateX[t].length);
 		drawpiece();
@@ -684,7 +610,6 @@ function right() {
 			Squares[s].x+=1;
 			Squares[s].oldy = Squares[s].y;
 		}
-		/* DBGGR */ logCoordinates();
 		hasNotMoved=false;
 		drawpiece();
 	}
@@ -697,7 +622,6 @@ function left() {
 			Squares[s].x-=1;
 			Squares[s].oldy = Squares[s].y;
 		}
-		/* DBGGR */ logCoordinates();
 		hasNotMoved=false;
 		drawpiece();
 	}
@@ -712,7 +636,6 @@ function down() {
 			Squares[s].y-=1;
 			Squares[s].oldx = Squares[s].x;
 		}
-		/* DBGGR */ logCoordinates();
 		hasNotMoved=false;
 		drawpiece();
 	}
@@ -722,7 +645,6 @@ function down() {
 }
 
 function drop() {
-/*	DBGGR */	document.getElementById("DBGGR").innerHTML = "";
 
 	dropby = dropbyf();
 
@@ -735,12 +657,10 @@ function drop() {
 	if (dropby>0) {
 		hasNotMoved=false;
 	}
-	/* DBGGR */ logCoordinates();
 	drawpiece();
 	register.reportBoard()
 	clearFullLines();
 	setupNew();
-	/* DBGGR */ //	document.write((JSON.stringify(Field).length)+JSON.stringify(Field));
 
 }
 
@@ -865,10 +785,8 @@ function isLegalMove(dir) {
 }
 
 var SPEED = 1000;
-/*	DBGGR */	var SPEED = 1000000;
 
 function clearFullLines() {
-	DBGGR("Entering clearFullLines()",DBGGR_THRESHOLD,true);
 	clearInterval(downint);
 	downint = setInterval("down()", SPEED);
 	linesWereCleared = false;
@@ -885,7 +803,6 @@ function clearFullLines() {
 			linesWereCleared = true;
 			for (j=i; j<BOARD_HEIGHT-1; j++) {
 				for (k=0; k<BOARD_WIDTH; k++) {
-					DBGGR("inside clearFullLines() for loops, i="+i+", j="+j,DBGGR_THRESHOLD);
 	 				Field[j][k] = Field[j+1][k];
 	 			}
 			}
@@ -917,8 +834,6 @@ function starter() {
 		hasNotMoved=false;
 		document.getElementById('linesCount').value=0;
 		refreshField(0);
-	/*	DBGGR */	document.getElementById('piecesCount').value=0;
-	/*	DBGGR */	document.getElementById('piecesCountDev').value=0;
 		gameOn = true;
 		register.sendInfo("request","startGame")
 		setupNew();
@@ -1005,7 +920,6 @@ function registerPlayer() {
 					for (i=0; i<d.length; i++) {
 						d[i] = 9 - (d[i] % 9);
 					}
-					/*	DBGGR */	countDeckOnDeal(d);
 					piecesArray = d.concat(piecesArray);
 					break;
 				case "board":
@@ -1074,12 +988,9 @@ function setupNew() {
 		return 0;
 	}
 	else {
-		/*	DBGGR */	writeRemainingDeck();
 		t = getNew();
 		r = 0;
 		hasNotMoved=true;
-		/*	DBGGR */	document.getElementById('piecesCount').value=parseFloat(document.getElementById('piecesCount').value)+1;
-		/*	DBGGR */	document.getElementById('piecesCountDev').value=parseFloat(document.getElementById('piecesCountDev').value)+1;
 		for (s=0; s<SQUARE_COUNT; s++) {
 			Squares[s].x = NewX[t][s];
 			Squares[s].y = NewY[t][s];
@@ -1118,160 +1029,21 @@ function preview_piece_update() {
 	}
 }
 
-// ***********************	// DBGGR
-// 	   Ugly Dev Shit.		// DBGGR
-// ***********************	// DBGGR
 
 
-/*	DBGGR */	function writeField() {
-/*	DBGGR */		document.write("[<br>");
-/*	DBGGR */		for (i=BOARD_HEIGHT-1; i>=0; i--) {
-/*	DBGGR */			document.write("[");
-/*	DBGGR */			for (j=0; j<BOARD_WIDTH; j++) {
-/*	DBGGR */				document.write(Field[i][j]);
-/*	DBGGR */				document.write(", ");
-/*	DBGGR */			}
-/*	DBGGR */			document.write("],<br>");
-/*	DBGGR */		}
-/*	DBGGR */		document.write("]<br>");
-/*	DBGGR */	}
-
-/*	DBGGR */	var DBG = true;
-/*	DBGGR */	var DBGGR_THRESHOLD = 00;
-
-/*	DBGGR */	function DBGGR(str,threshold,ref) {
-/*	DBGGR */		if (DBG) {
-/*	DBGGR */			if (!ref) {
-/*	DBGGR */				ref = false
-/*	DBGGR */			}
-/*	DBGGR */			if (ref) {
-/*	DBGGR */				refreshMonitor(0);
-/*	DBGGR */			}
-/*	DBGGR */			if (parseFloat(document.getElementById('piecesCount').value)>threshold) {
-/*	DBGGR */				document.getElementById("DBGGR").innerHTML = str+"\n"+document.getElementById("DBGGR").innerHTML
-/*	DBGGR */				//alert("!");
-/*	DBGGR */			}
-/*	DBGGR */		}
-/*	DBGGR */	}
-
-/*	DBGGR */	function logCoordinates() {
-/*	DBGGR */		for (s=0; s<SQUARE_COUNT; s++) {
-/*	DBGGR */			// Actual Piece
-/*	DBGGR */			document.getElementById('s'+s+'x').value = Squares[s].x;
-/*	DBGGR */			document.getElementById('s'+s+'y').value = Squares[s].y;
-/*	DBGGR */			document.getElementById('s'+s+'xo').value = Squares[s].oldx;
-/*	DBGGR */			document.getElementById('s'+s+'yo').value = Squares[s].oldy;
-/*	DBGGR */			// Shadow
-/*	DBGGR */			document.getElementById('ss'+s+'x').value = Squares[s].shx;
-/*	DBGGR */			document.getElementById('ss'+s+'y').value = Squares[s].shy;
-/*	DBGGR */		}
-/*	DBGGR */	}
-
-/*	DBGGR */	function toggleShadow() {
-/*	DBGGR */		if(document.getElementById('playfield').style.backgroundColor == 'transparent') {
-/*	DBGGR */			document.getElementById('playfield').style.backgroundColor = '#000000';
-/*	DBGGR */		//	document.getElementById('shadowfield').style.zIndex = 1;
-/*	DBGGR */		}
-/*	DBGGR */		else {
-/*	DBGGR */			document.getElementById('playfield').style.backgroundColor = 'transparent';
-/*	DBGGR */		//	document.getElementById('shadowfield').style.zIndex = 1;
-/*	DBGGR */		}
-/*	DBGGR */	}
 
 
-	function refreshMonitor(startrow) { // DBGGR 
-/*		for (e=startrow; e<BOARD_HEIGHT; e++) {	// DBGGR
-			yidstr = (e<10) ? "0"+e : e;	// DBGGR
-			for (f=0; f<BOARD_WIDTH; f++) {	// DBGGR
-				xidstr = (f<10) ? "0"+f : f;	// DBGGR
-				if (Field[e][f]>0) {	// DBGGR
-					document.getElementById('m'+yidstr+''+xidstr).style.backgroundImage = 'url("/blickles/p/'+(Field[e][f])+'.png")';	// DBGGR
-				} else {	// DBGGR
-					document.getElementById('m'+yidstr+''+xidstr).style.backgroundImage = 'none';	// DBGGR
-				}	// DBGGR
-			}	// DBGGR
-		}	// DBGGR 
-*/	}	// DBGGR
 
-/*	DBGGR */	function writeRemainingDeck() {
-/*	DBGGR */		piecesAryDuplicate = [];
-/*	DBGGR */		piecesAryDuplicate = piecesAryDuplicate.concat(piecesArray);
-/*	DBGGR */		len = piecesAryDuplicate.length-1;
-/*	DBGGR */		if (document.getElementById('piecesAryViewer'+(len))) {
-/*	DBGGR */			document.getElementById('piecesAryViewer'+(len)).style.backgroundColor = 'white';
-/*	DBGGR */		} 
-/*	DBGGR */		else {
-/*	DBGGR */			for (i=0; i<=len; i++) {
-/*	DBGGR */				if (document.getElementById('piecesAryViewer'+(i)) == null) {
-/*	DBGGR */					if (i % 6 == 0) {
-/*	DBGGR */						document.getElementById('piecesAryDiv').innerHTML += "\t<br>\n";
-/*	DBGGR */					}
-/*	DBGGR */					document.getElementById('piecesAryDiv').innerHTML += "\t<label for='piecesAryViewer"+i+"' class='piecesAryViewer'>"+i+":</label>\n";
-/*	DBGGR */					document.getElementById('piecesAryDiv').innerHTML += "<input type='text' id='piecesAryViewer"+i+"' class='piecesAryViewer'>\n";
-/*	DBGGR */				}
-/*	DBGGR */			}
-/*	DBGGR */		}
-/*	DBGGR */		document.getElementById('piecesAryViewerSize').value = len;
-/*	DBGGR */		for(i=0; i<piecesAryDuplicate.length; i++) {
-/*	DBGGR */			document.getElementById('piecesAryViewer'+i).value = piecesAryDuplicate[i];
-/*	DBGGR */		}
-/*	DBGGR */		if (document.getElementById("piecesAryViewer"+len) == null) {
-/*	DBGGR */			for (i=0; i<=len; i++) {
-/*	DBGGR */				if (document.getElementById('piecesAryViewer'+(i)) == null) {
-/*	DBGGR */					if (i % 6 == 0) {
-/*	DBGGR */						document.getElementById('piecesAryDiv').innerHTML += "\t<br>\n";
-/*	DBGGR */					}
-/*	DBGGR */					document.getElementById('piecesAryDiv').innerHTML += "\t<label for='piecesAryViewer"+i+"' class='piecesAryViewer'>"+i+":</label>\n";
-/*	DBGGR */					document.getElementById('piecesAryDiv').innerHTML += "<input type='text' id='piecesAryViewer"+i+"' class='piecesAryViewer'>\n";
-/*	DBGGR */				}
-/*	DBGGR */			}
-/*	DBGGR */		}
-/*	DBGGR */		document.getElementById("piecesAryViewer"+len).style.backgroundColor = 'yellow';
-/*	DBGGR */		setTimeout("document.getElementById('piecesAryViewer"+len+"').style.backgroundColor = 'white'",2500);
-/*	DBGGR */	}
 
-/*	DBGGR */	function countDeckOnDeal(ary) { 
-/*	DBGGR */		s = 0;
-/*	DBGGR */		for(i=0; i<ary.length; i++) {
-/*	DBGGR */			document.getElementById('typeCounter'+ary[i]).value = parseInt(document.getElementById('typeCounter'+ary[i]).value)+1;
-/*	DBGGR */		}
-/*	DBGGR */		for(i=0; i<10; i++) {
-/*	DBGGR */			s += parseInt(document.getElementById('typeCounter'+i).value)
-/*	DBGGR */		}
-/*	DBGGR */		document.getElementById('typeCounterTotal').value = parseInt(s);
-/*	DBGGR */	}
+
+
+
+
 
 </script><body id='bd'>
 <input type="button" id="starter" onclick="starter();" value="Start">
-<!-- DBGGR -->	<input type="button" onclick="writeField();" value="Write Field">
-<!-- DBGGR -->	<input type="button" onclick="document.write(JSON.stringify(Field));" value="JSON Field">
-<!-- DBGGR -->	<input type="button" onclick="refreshField(0);" value="Refresh Field">
-<!-- DBGGR -->	<input type="button" onclick="toggleShadow();" value="Toggle Shadow">
 <div class="explain"> Left, right, up for CW turn, space for fast drop. <br><a href="todo.html">The To-Do List</a></div>
 <input type="text" id="linesCount" class="linesCount">
-<!-- DBGGR -->	<input type="text" id="piecesCount" class="piecesCount"><br>
-<!-- DBGGR -->	<div id="piecesAryDiv"><label for="piecesAryViewerSize" class="piecesAryViewer" style="font-size:11pt;">Size:</label><input type="text" id="piecesAryViewerSize" class="piecesAryViewer" style="font-size:11pt;width:25px"><br>
-<!-- DBGGR -->	<script language="javascript">
-/*	DBGGR */	for (i=0; i<17; i++) {
-/*	DBGGR */		if(i%6==0) { document.write("\t<br>\n"); }
-/*	DBGGR */		document.write("\t<label for='piecesAryViewer"+i+"' class='piecesAryViewer'>"+i+":</label>\n");
-/*	DBGGR */		document.write("<input type='text' id='piecesAryViewer"+i+"' class='piecesAryViewer'>\n");
-/*	DBGGR */	}
-<!-- DBGGR -->	</script>
-<!-- DBGGR -->	</div>
-<!-- DBGGR -->	<div id="typeCounterDiv">
-<!-- DBGGR -->	<script language="javascript">
-/*	DBGGR */	for (i=0; i<10; i++) {
-/*	DBGGR */		document.write("\t<label for='typeCounter"+i+"' class='typeCounter'>"+i+":</label>\n");
-/*	DBGGR */		document.write("<input type='text' id='typeCounter"+i+"' class='typeCounter' value=0>\n");
-/*	DBGGR */	}
-/*	DBGGR */	document.write("<input type='text' id='typeCounterTotal' class='typeCounter' value=0>\n");
-<!-- DBGGR -->	</script>
-<!-- DBGGR -->	</div>
-<!-- DBGGR --> <input type="text" id="piecesCountDev" class="piecesCountDev">
-<!-- DBGGR --> <input type="text" id="decksCounter" class="DecksCounter" value=0>
-<!-- DBGGR --> <br>
-<!-- DBGGR --><textarea id="DBGGR" class="DBGGR"></textarea>
 <div class="pfring">
 <div class="fieldContainer">
 	<div id="shadowfield">
@@ -1327,111 +1099,10 @@ function preview_piece_update() {
 	</script>
 </div>
 	
-<!-- DBGGR -->	<div class="pfmonitor">
-<!-- DBGGR -->	<script language="javascript">
-/* DBGGR */	for (i=BOARD_HEIGHT-1; i>=0; i--) {
-/*	DBGGR */		document.write("<!-- DBGGR -->\t<div class=\"")
-/*	DBGGR */		if (i==BOARD_HEIGHT-1) {
-/*	DBGGR */			document.write("top")
-/*	DBGGR */		}
-/*	DBGGR */		document.write("row\">\n")
-/*	DBGGR */		for (j=0; j<BOARD_WIDTH; j++) {
-/*	DBGGR */			document.write("<!-- DBGGR -->\t\t<span id=m"+TwoDigits(i)+TwoDigits(j)+"></span>\n")
-/*	DBGGR */		}
-/*	DBGGR */		document.write("\t</div>\n")
-/*	DBGGR */		//alert("just wrote a row")
-/*	DBGGR */	} 
-<!-- DBGGR --> </script>
-<!-- DBGGR -->	</div>
 
-<!-- DBGGR --><div id="coordinates"><div>
-<!-- DBGGR -->	<span style="width:50%;">
-<!-- DBGGR -->		Square 0
-<!-- DBGGR -->		<label for="s0x">X</label>
-<!-- DBGGR -->			<input type="text" id="s0x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s0y" class="coordOutput">
-<!-- DBGGR -->		<label for="s0y">Y</label> / 
-<!-- DBGGR -->		<label for="s0xo">Old X</label>
-<!-- DBGGR -->			<input type="text" id="s0xo" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s0yo" class="coordOutput">
-<!-- DBGGR -->		<label for="s0yo">Old Y</label>
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Square 1
-<!-- DBGGR -->		<label for="s1x">X</label>
-<!-- DBGGR -->			<input type="text" id="s1x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s1y" class="coordOutput">
-<!-- DBGGR -->		<label for="s1y">Y</label> / 
-<!-- DBGGR -->		<label for="s1xo">Old X</label>
-<!-- DBGGR -->			<input type="text" id="s1xo" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s1yo" class="coordOutput">
-<!-- DBGGR -->		<label for="s1yo">Old Y</label>
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Square 2
-<!-- DBGGR -->		<label for="s2x">X</label>
-<!-- DBGGR -->			<input type="text" id="s2x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s2y" class="coordOutput">
-<!-- DBGGR -->		<label for="s2y">Y</label> / 
-<!-- DBGGR -->		<label for="s2xo">Old X</label>
-<!-- DBGGR -->			<input type="text" id="s2xo" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s2yo" class="coordOutput">
-<!-- DBGGR -->		<label for="s2yo">Old Y</label>
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Square 3
-<!-- DBGGR -->		<label for="s3x">X</label>
-<!-- DBGGR -->			<input type="text" id="s3x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s3y" class="coordOutput">
-<!-- DBGGR -->		<label for="s3y">Y</label> / 
-<!-- DBGGR -->		<label for="s3xo">Old X</label>
-<!-- DBGGR -->			<input type="text" id="s3xo" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s3yo" class="coordOutput">
-<!-- DBGGR -->		<label for="s3yo">Old Y</label>
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Square 4
-<!-- DBGGR -->		<label for="s4x">X</label>
-<!-- DBGGR -->			<input type="text" id="s4x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s4y" class="coordOutput">
-<!-- DBGGR -->		<label for="s4y">Y</label> / 
-<!-- DBGGR -->		<label for="s4xo">Old X</label>
-<!-- DBGGR -->			<input type="text" id="s4xo" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="s4yo" class="coordOutput">
-<!-- DBGGR -->		<label for="s4yo">Old Y</label>
-<!-- DBGGR -->	</span>
-<!-- DBGGR -->	<span style="width:50%;">
-<!-- DBGGR -->		Shadow 0
-<!-- DBGGR -->		<label for="ss0x">X</label>
-<!-- DBGGR -->			<input type="text" id="ss0x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="ss0y" class="coordOutput">
-<!-- DBGGR -->		<label for="ss0y">Y</label>
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Shadow 1
-<!-- DBGGR -->		<label for="ss1x">X</label>
-<!-- DBGGR -->			<input type="text" id="ss1x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="ss1y" class="coordOutput">
-<!-- DBGGR -->		<label for="ss1y">Y</label> 
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Shadow 2
-<!-- DBGGR -->		<label for="ss2x">X</label>
-<!-- DBGGR -->			<input type="text" id="ss2x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="ss2y" class="coordOutput">
-<!-- DBGGR -->		<label for="ss2y">Y</label> 
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Shadow 3
-<!-- DBGGR -->		<label for="ss3x">X</label>
-<!-- DBGGR -->			<input type="text" id="ss3x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="ss3y" class="coordOutput">
-<!-- DBGGR -->		<label for="ss3y">Y</label> 
-<!-- DBGGR -->		<br>
-<!-- DBGGR -->		Shadow 4
-<!-- DBGGR -->		<label for="ss4x">X</label>
-<!-- DBGGR -->			<input type="text" id="ss4x" class="coordOutput">
-<!-- DBGGR -->			<input type="text" id="ss4y" class="coordOutput">
-<!-- DBGGR -->		<label for="ss4y">Y</label> 
-<!-- DBGGR -->	</span>
-<!-- DBGGR --></div>
-<!-- DBGGR --><br><br><br><br><br><br><br><br><br>
-<!-- DBGGR -->
 </div>
 
 <div id="otherPlayersDiv">
 </div>
 </body>
+
